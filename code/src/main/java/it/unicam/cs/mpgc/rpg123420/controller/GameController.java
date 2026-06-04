@@ -6,8 +6,9 @@ import it.unicam.cs.mpgc.rpg123420.model.entity.Warrior;
 import it.unicam.cs.mpgc.rpg123420.model.game.Dungeon;
 import it.unicam.cs.mpgc.rpg123420.model.game.Room;
 import it.unicam.cs.mpgc.rpg123420.model.service.CombatService;
-import it.unicam.cs.mpgc.rpg123420.persistence.GameSaveData;
+import it.unicam.cs.mpgc.rpg123420.persistence.DataStore;
 import it.unicam.cs.mpgc.rpg123420.persistence.JsonDataStore;
+import it.unicam.cs.mpgc.rpg123420.persistence.dto.GameStateDTO;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class GameController {
     private Player player;
     private Dungeon dungeon;
     private CombatService combatService;
-    private JsonDataStore dataStore;
+    private DataStore dataStore; // Usiamo l'interfaccia, non l'implementazione concreta (Dependency Inversion)
 
     public GameController() {
         this.combatService = new CombatService();
@@ -43,8 +44,13 @@ public class GameController {
     }
 
     // Metodi esposti alla View
-    public Player getPlayer() { return player; }
-    public Dungeon getDungeon() { return dungeon; }
+    public Player getPlayer() {
+        return player;
+    }
+
+    public Dungeon getDungeon() {
+        return dungeon;
+    }
 
     public List<Enemy> getCurrentEnemies() {
         Room current = dungeon.getCurrentRoom();
@@ -83,14 +89,17 @@ public class GameController {
     }
 
     public void saveGame() {
-        dataStore.saveGame(player, dungeon, "savegame.json");
+        GameStateDTO state = new GameStateDTO(player, dungeon);
+        dataStore.saveGame(state, "savegame.json");
     }
 
     public void loadGame() {
-        GameSaveData data = dataStore.loadGame("savegame.json");
-        if (data != null) {
-            this.player = data.player;
-            this.dungeon = data.dungeon;
+        GameStateDTO state = dataStore.loadGame("savegame.json");
+        if (state != null && state.getPlayer() != null && state.getDungeon() != null) {
+            this.player = state.getPlayer();
+            this.dungeon = state.getDungeon();
+        } else {
+            System.out.println("Nessun salvataggio valido trovato.");
         }
     }
 
