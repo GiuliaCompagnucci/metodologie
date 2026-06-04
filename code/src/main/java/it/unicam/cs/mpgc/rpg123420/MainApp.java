@@ -7,7 +7,7 @@ public class MainApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        primaryStage.setTitle("RPG Project - Matricola 123420");
+        primaryStage.setTitle("RPG Project");
 
         primaryStage.show();
     }
