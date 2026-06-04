@@ -10,6 +10,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 import javafx.stage.Stage;
@@ -21,13 +22,12 @@ public class GameView {
     private TextArea logArea;
     private VBox enemyContainer;
     private Label statusLabel;
+    private HBox actionContainer; // Contenitore per i bottoni di attacco dinamici
 
     public void start(Stage primaryStage) {
         controller = new GameController();
-
         primaryStage.setTitle("RPG Dungeon Crawler - Matricola 123420");
 
-        // UI Components
         statusLabel = new Label();
         statusLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
@@ -38,16 +38,20 @@ public class GameView {
         enemyContainer = new VBox(10);
         enemyContainer.setAlignment(Pos.CENTER);
 
-        Button attackBtn = new Button("Attacca Nemico 1");
+        // Contenitore per le azioni (attacchi)
+        actionContainer = new HBox(10);
+        actionContainer.setAlignment(Pos.CENTER);
+
         Button nextRoomBtn = new Button("Prossima Stanza");
         Button saveBtn = new Button("Salva Partita");
         Button loadBtn = new Button("Carica Partita");
 
-        // Layout
         VBox root = new VBox(20);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.CENTER);
-        root.getChildren().addAll(statusLabel, enemyContainer, logArea, attackBtn, nextRoomBtn, saveBtn, loadBtn);
+
+        // Aggiungiamo i componenti in ordine logico
+        root.getChildren().addAll(statusLabel, enemyContainer, actionContainer, logArea, nextRoomBtn, saveBtn, loadBtn);
 
         Scene scene = new Scene(root, 600, 500);
         primaryStage.setScene(scene);
@@ -55,13 +59,7 @@ public class GameView {
 
         updateUI();
 
-        // Event Handlers
-        attackBtn.setOnAction(e -> {
-            String result = controller.attackEnemy(0); // Semplificato: attacca sempre il primo
-            logArea.appendText(result + "\n");
-            updateUI();
-        });
-
+        // Listener per il bottone Next Room
         nextRoomBtn.setOnAction(e -> {
             controller.nextRoom();
             logArea.appendText("Entri nella prossima stanza...\n");
@@ -81,29 +79,60 @@ public class GameView {
     }
 
     private void updateUI() {
+        // Gestione Game Over / Vittoria
         if (controller.isGameOver()) {
             statusLabel.setText("GAME OVER");
             statusLabel.setStyle("-fx-text-fill: red;");
+            actionContainer.getChildren().clear(); // Pulisce i bottoni attacco
             return;
         }
         if (controller.isVictory()) {
             statusLabel.setText("VITTORIA! Dungeon Completato.");
             statusLabel.setStyle("-fx-text-fill: green;");
+            actionContainer.getChildren().clear();
             return;
         }
 
+        // Aggiorna Status
         statusLabel.setText("Stanza: " + (controller.getDungeon().getCurrentRoomIndex() + 1) +
                 " | HP Eroe: " + controller.getPlayer().getCurrentHealth());
 
+        // Pulisce e rigenera la lista nemici e i bottoni
         enemyContainer.getChildren().clear();
+        actionContainer.getChildren().clear();
+
         List<Enemy> enemies = controller.getCurrentEnemies();
+
         for (int i = 0; i < enemies.size(); i++) {
             Enemy e = enemies.get(i);
+
+            // Label del nemico
             Label enemyLabel = new Label(e.getName() + " (HP: " + e.getCurrentHealth() + "/" + e.getMaxHealth() + ")");
             if (!e.isAlive()) {
                 enemyLabel.setStyle("-fx-text-fill: gray; -fx-strikethrough: true;");
             }
             enemyContainer.getChildren().add(enemyLabel);
+
+            // Bottone di attacco dinamico (solo se il nemico è vivo)
+            if (e.isAlive()) {
+                Button attackBtn = new Button("Attacca " + e.getName());
+                int enemyIndex = i; // Variabile finale per la lambda
+
+                attackBtn.setOnAction(event -> {
+                    String result = controller.attackEnemy(enemyIndex);
+                    logArea.appendText(result + "\n");
+                    updateUI(); // Aggiorna la UI dopo l'attacco
+                });
+
+                actionContainer.getChildren().add(attackBtn);
+            }
+        }
+
+        // Se non ci sono bottoni di attacco (tutti morti), mostra messaggio
+        if (actionContainer.getChildren().isEmpty()) {
+            Label msg = new Label("Nemici sconfitti! Usa 'Prossima Stanza'.");
+            msg.setStyle("-fx-text-fill: green;");
+            actionContainer.getChildren().add(msg);
         }
     }
 }

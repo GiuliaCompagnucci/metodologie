@@ -82,6 +82,13 @@ public class GameController {
         return log;
     }
 
+    public boolean isEnemyAlive(int index) {
+        Room current = dungeon.getCurrentRoom();
+        if (current == null) return false;
+        List<Enemy> enemies = current.getEnemies();
+        return index >= 0 && index < enemies.size() && enemies.get(index).isAlive();
+    }
+
     public void nextRoom() {
         if (dungeon.getCurrentRoom() != null && !dungeon.getCurrentRoom().hasLivingEnemies()) {
             dungeon.nextRoom();
