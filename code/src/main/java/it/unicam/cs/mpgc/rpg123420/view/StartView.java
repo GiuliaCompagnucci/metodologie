@@ -12,6 +12,7 @@ public class StartView {
     private Stage primaryStage;
     private GameView gameView;
     private GameController controller;
+    private Label descriptionLabel;
 
     public StartView(Stage primaryStage, GameController controller) {
         this.primaryStage = primaryStage;
@@ -32,17 +33,34 @@ public class StartView {
         classCombo.getItems().addAll("Warrior", "Mage");
         classCombo.setValue("Warrior"); // Default
 
+        // Label per la descrizione
+        descriptionLabel = new Label();
+        descriptionLabel.setWrapText(true); // Permette al testo di andare a capo
+        descriptionLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
+        updateDescription("Warrior"); // Imposta la descrizione iniziale
+
+
         Button startBtn = new Button("Inizia Avventura");
         Button loadBtn = new Button("Carica Partita Salvata");
 
         VBox root = new VBox(15);
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.CENTER);
-        root.getChildren().addAll(title, nameField, classCombo, startBtn, loadBtn);
 
-        Scene scene = new Scene(root, 400, 300);
+        // Ordine degli elementi: Titolo, Nome, Combo, Descrizione, Bottoni
+        root.getChildren().addAll(title, nameField, classCombo, descriptionLabel, startBtn, loadBtn);
+
+        Scene scene = new Scene(root, 400, 350);
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        // Listener per aggiornare la descrizione quando cambia la selezione
+        classCombo.setOnAction(e -> {
+            String selected = classCombo.getValue();
+            if (selected != null) {
+                updateDescription(selected);
+            }
+        });
 
         startBtn.setOnAction(e -> {
             String name = nameField.getText().isEmpty() ? "Eroe" : nameField.getText();
@@ -63,5 +81,15 @@ public class StartView {
                 alert.showAndWait();
             }
         });
+    }
+
+    private void updateDescription(String className) {
+        if (className.equals("Warrior")) {
+            descriptionLabel.setText("Guerriero: Alta resistenza fisica e danni costanti. Ideale per chi preferisce la sopravvivenza.");
+        } else if (className.equals("Mage")) {
+            descriptionLabel.setText("Mago: Bassa resistenza ma danni magici devastanti. Ideale per chi vuole finire i nemici in pochi colpi.");
+        } else {
+            descriptionLabel.setText("");
+        }
     }
 }

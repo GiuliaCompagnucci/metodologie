@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg123420.model.game;
 
-import it.unicam.cs.mpgc.rpg123420.model.entity.Enemy;
+import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Enemy;
 
 import java.util.ArrayList;
 import java.util.List;

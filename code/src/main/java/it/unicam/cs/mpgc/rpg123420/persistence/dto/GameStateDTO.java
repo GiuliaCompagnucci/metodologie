@@ -1,6 +1,6 @@
 package it.unicam.cs.mpgc.rpg123420.persistence.dto;
 
-import it.unicam.cs.mpgc.rpg123420.model.entity.Player;
+import it.unicam.cs.mpgc.rpg123420.model.entity.character.Player;
 import it.unicam.cs.mpgc.rpg123420.model.game.Dungeon;
 
 /**

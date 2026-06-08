@@ -1,6 +1,8 @@
-package it.unicam.cs.mpgc.rpg123420.model.entity;
+package it.unicam.cs.mpgc.rpg123420.model.entity.enemy;
 
-public class Enemy implements Combatant {
+import it.unicam.cs.mpgc.rpg123420.model.entity.Combatant;
+
+public abstract class Enemy implements Combatant {
     private String name;
     private int currentHealth;
     private int maxHealth;
@@ -40,5 +42,9 @@ public class Enemy implements Combatant {
 
     public int getDamage() {
         return damage;
+    }
+    // Metodo opzionale per comportamenti speciali (es. abilità del boss)
+    public String specialAbility() {
+        return "";
     }
 }

@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg123420.model.service;
 
-import it.unicam.cs.mpgc.rpg123420.model.entity.Enemy;
-import it.unicam.cs.mpgc.rpg123420.model.entity.Player;
+import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Enemy;
+import it.unicam.cs.mpgc.rpg123420.model.entity.character.Player;
 import it.unicam.cs.mpgc.rpg123420.model.game.Room;
 
 public class CombatService {

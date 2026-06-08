@@ -1,4 +1,6 @@
-package it.unicam.cs.mpgc.rpg123420.model.entity;
+package it.unicam.cs.mpgc.rpg123420.model.entity.character;
+
+import it.unicam.cs.mpgc.rpg123420.model.entity.Combatant;
 
 public class Mage extends Player {
     public Mage(String name) {

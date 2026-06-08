@@ -1,9 +1,14 @@
 package it.unicam.cs.mpgc.rpg123420.controller;
 
-import it.unicam.cs.mpgc.rpg123420.model.entity.Enemy;
-import it.unicam.cs.mpgc.rpg123420.model.entity.Mage;
-import it.unicam.cs.mpgc.rpg123420.model.entity.Player;
-import it.unicam.cs.mpgc.rpg123420.model.entity.Warrior;
+import it.unicam.cs.mpgc.rpg123420.model.entity.character.Mage;
+import it.unicam.cs.mpgc.rpg123420.model.entity.character.Player;
+import it.unicam.cs.mpgc.rpg123420.model.entity.character.Warrior;
+import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Boss;
+import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Enemy;
+import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Goblin;
+import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Orc;
+import it.unicam.cs.mpgc.rpg123420.model.entity.item.HealthPotion;
+import it.unicam.cs.mpgc.rpg123420.model.entity.item.Item;
 import it.unicam.cs.mpgc.rpg123420.model.game.Dungeon;
 import it.unicam.cs.mpgc.rpg123420.model.game.Room;
 import it.unicam.cs.mpgc.rpg123420.model.service.CombatService;
@@ -40,20 +45,38 @@ public class GameController {
         this.gameStarted = true;
     }
 
+    public void useItem(int itemIndex) {
+        if (!gameStarted || player == null) return;
+
+        List<Item> items = player.getInventory();
+        if (itemIndex >= 0 && itemIndex < items.size()) {
+            Item item = items.get(itemIndex);
+            item.use(player); // Polimorfismo: chiama use() specifico dell'oggetto
+            player.removeItem(item); // Rimuovi l'oggetto dopo l'uso (se consumabile)
+            // Logica di log potrebbe essere gestita dalla View o ritornata qui
+        }
+    }
+
+    public List<Item> getPlayerItems() {
+        if (player == null) return List.of();
+        return player.getInventory();
+    }
 
     private void initDungeon() {
-        // Creazione Dungeon
         this.dungeon = new Dungeon();
 
-        // Stanza 1
+        // Diamo al giocatore una pozione iniziale per aiutare contro il boss
+        this.player.addItem(new HealthPotion(50));
+
+        // Stanza 1: Goblin e Orco
         Room r1 = new Room(1, false);
-        r1.addEnemy(new Enemy("Goblin", 50, 10));
-        r1.addEnemy(new Enemy("Orco", 80, 15));
+        r1.addEnemy(new Goblin());
+        r1.addEnemy(new Orc());
         dungeon.addRoom(r1);
 
-        // Stanza 2 (Boss)
+        // Stanza 2: Boss
         Room r2 = new Room(2, true);
-        r2.addEnemy(new Enemy("Drago Boss", 300, 40));
+        r2.addEnemy(new Boss());
         dungeon.addRoom(r2);
     }
 
@@ -103,7 +126,7 @@ public class GameController {
 
         // Controllo fine stanza
         if (!currentRoom.hasLivingEnemies() && player.isAlive()) {
-            log += "\nStanza liberata! Premi Avanti per procedere.";
+            log += "\nStanza liberata! Premi 'Prossima stanza' per procedere.";
         }
 
         return log;

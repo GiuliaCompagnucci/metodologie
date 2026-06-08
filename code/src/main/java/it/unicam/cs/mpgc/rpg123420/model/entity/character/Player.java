@@ -1,4 +1,7 @@
-package it.unicam.cs.mpgc.rpg123420.model.entity;
+package it.unicam.cs.mpgc.rpg123420.model.entity.character;
+
+import it.unicam.cs.mpgc.rpg123420.model.entity.Combatant;
+import it.unicam.cs.mpgc.rpg123420.model.entity.item.Item;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +10,7 @@ public abstract class Player implements Combatant {
     private String name;
     private int currentHealth;
     private int maxHealth;
-    private List<String> inventory; // Semplificato come lista di stringhe per ora
+    private List<Item> inventory;
 
     public Player(String name, int maxHealth) {
         this.name = name;
@@ -41,12 +44,21 @@ public abstract class Player implements Combatant {
         return currentHealth > 0;
     }
 
-    public void addItem(String item) {
-        inventory.add(item);
+    public void addItem(Item item) {
+        this.inventory.add(item);
     }
 
-    public List<String> getInventory() {
+    public List<Item> getInventory() {
         return inventory;
+    }
+
+    public void removeItem(Item item) {
+        this.inventory.remove(item);
+    }
+
+    // Metodo per curarsi
+    public void heal(int amount) {
+        this.currentHealth = Math.min(this.maxHealth, this.currentHealth + amount);
     }
 
     // Metodo astratto per l'attacco specifico della classe
