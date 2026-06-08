@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg123420.controller;
 
 import it.unicam.cs.mpgc.rpg123420.model.entity.Enemy;
+import it.unicam.cs.mpgc.rpg123420.model.entity.Mage;
 import it.unicam.cs.mpgc.rpg123420.model.entity.Player;
 import it.unicam.cs.mpgc.rpg123420.model.entity.Warrior;
 import it.unicam.cs.mpgc.rpg123420.model.game.Dungeon;
@@ -17,17 +18,30 @@ public class GameController {
     private Dungeon dungeon;
     private CombatService combatService;
     private DataStore dataStore; // Usiamo l'interfaccia, non l'implementazione concreta (Dependency Inversion)
+    private boolean gameStarted = false;
 
     public GameController() {
         this.combatService = new CombatService();
         this.dataStore = new JsonDataStore();
-        initNewGame();
     }
 
-    private void initNewGame() {
-        // Creazione Giocatore
-        this.player = new Warrior("Eroe");
+    // Metodo chiamato dalla UI quando l'utente sceglie la classe
+    public void startNewGame(String className, String playerName) {
+        if (className.equals("Warrior")) {
+            this.player = new Warrior(playerName);
+        } else if (className.equals("Mage")) {
+            this.player = new Mage(playerName);
+        } else {
+            // Default o eccezione
+            this.player = new Warrior(playerName);
+        }
 
+        initDungeon();
+        this.gameStarted = true;
+    }
+
+
+    private void initDungeon() {
         // Creazione Dungeon
         this.dungeon = new Dungeon();
 
@@ -43,6 +57,10 @@ public class GameController {
         dungeon.addRoom(r2);
     }
 
+    public boolean isGameStarted() {
+        return gameStarted;
+    }
+
     // Metodi esposti alla View
     public Player getPlayer() {
         return player;
@@ -53,11 +71,20 @@ public class GameController {
     }
 
     public List<Enemy> getCurrentEnemies() {
+        if (!gameStarted || dungeon == null) {
+            System.out.println("Gioco non iniziato o dungeon nullo");
+            return List.of();
+        }
         Room current = dungeon.getCurrentRoom();
-        return current != null ? current.getEnemies() : List.of();
+        if (current == null) {
+            System.out.println("Stanza corrente nulla");
+            return List.of();
+        }
+        return current.getEnemies();
     }
 
     public String attackEnemy(int enemyIndex) {
+        if (!gameStarted) return "Gioco non iniziato.";
         Room currentRoom = dungeon.getCurrentRoom();
         if (currentRoom == null) return "Nessuna stanza attiva.";
 
@@ -82,20 +109,15 @@ public class GameController {
         return log;
     }
 
-    public boolean isEnemyAlive(int index) {
-        Room current = dungeon.getCurrentRoom();
-        if (current == null) return false;
-        List<Enemy> enemies = current.getEnemies();
-        return index >= 0 && index < enemies.size() && enemies.get(index).isAlive();
-    }
-
     public void nextRoom() {
+        if (!gameStarted) return;
         if (dungeon.getCurrentRoom() != null && !dungeon.getCurrentRoom().hasLivingEnemies()) {
             dungeon.nextRoom();
         }
     }
 
     public void saveGame() {
+        if (!gameStarted) return;
         GameStateDTO state = new GameStateDTO(player, dungeon);
         dataStore.saveGame(state, "savegame.json");
     }
@@ -105,16 +127,20 @@ public class GameController {
         if (state != null && state.getPlayer() != null && state.getDungeon() != null) {
             this.player = state.getPlayer();
             this.dungeon = state.getDungeon();
+            this.gameStarted = true;
         } else {
             System.out.println("Nessun salvataggio valido trovato.");
         }
     }
 
     public boolean isGameOver() {
+        if (!gameStarted) return false;
         return !player.isAlive();
     }
 
     public boolean isVictory() {
-        return dungeon.isFinished() && !dungeon.getCurrentRoom().hasLivingEnemies();
+        if (!gameStarted) return false;
+        Room current = dungeon.getCurrentRoom();
+        return dungeon.isFinished() && (current == null || !current.hasLivingEnemies());
     }
 }

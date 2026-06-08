@@ -24,8 +24,12 @@ public class GameView {
     private Label statusLabel;
     private HBox actionContainer; // Contenitore per i bottoni di attacco dinamici
 
+    // Costruttore che riceve il controller
+    public GameView(GameController controller) {
+        this.controller = controller;
+    }
+
     public void start(Stage primaryStage) {
-        controller = new GameController();
         primaryStage.setTitle("RPG Dungeon Crawler - Matricola 123420");
 
         statusLabel = new Label();
@@ -93,9 +97,17 @@ public class GameView {
             return;
         }
 
-        // Aggiorna Status
-        statusLabel.setText("Stanza: " + (controller.getDungeon().getCurrentRoomIndex() + 1) +
-                " | HP Eroe: " + controller.getPlayer().getCurrentHealth());
+        // Recupera informazioni dal controller
+        String heroClass = controller.getPlayer().getClass().getSimpleName();
+        String heroName = controller.getPlayer().getName();
+        int currentHp = controller.getPlayer().getCurrentHealth();
+        int maxHp = controller.getPlayer().getMaxHealth();
+        int roomIndex = controller.getDungeon().getCurrentRoomIndex() + 1;
+
+        // Aggiorna la label di stato con tutte le informazioni rilevanti
+        statusLabel.setText(String.format("%s (%s) | Stanza: %d | HP: %d/%d",
+                heroName, heroClass, roomIndex, currentHp, maxHp));
+        statusLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
         // Pulisce e rigenera la lista nemici e i bottoni
         enemyContainer.getChildren().clear();
