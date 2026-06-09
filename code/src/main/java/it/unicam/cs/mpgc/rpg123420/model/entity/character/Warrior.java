@@ -10,6 +10,6 @@ public class Warrior extends Player {
     @Override
     public int attack(Combatant target) {
         System.out.println(getName() + " colpisce con la spada!");
-        return 25; // Danno fisico
+        return 25 + getBonusDamage(); // Danno fisico
     }
 }

@@ -10,12 +10,14 @@ public abstract class Player implements Combatant {
     private String name;
     private int currentHealth;
     private int maxHealth;
+    private int bonusDamage;
     private List<Item> inventory;
 
     public Player(String name, int maxHealth) {
         this.name = name;
         this.maxHealth = maxHealth;
         this.currentHealth = maxHealth;
+        this.bonusDamage = 0;
         this.inventory = new ArrayList<>();
     }
 
@@ -59,6 +61,14 @@ public abstract class Player implements Combatant {
     // Metodo per curarsi
     public void heal(int amount) {
         this.currentHealth = Math.min(this.maxHealth, this.currentHealth + amount);
+    }
+
+    public void addBonusDamage(int amount) {
+        this.bonusDamage += amount;
+    }
+
+    public int getBonusDamage() {
+        return bonusDamage;
     }
 
     // Metodo astratto per l'attacco specifico della classe

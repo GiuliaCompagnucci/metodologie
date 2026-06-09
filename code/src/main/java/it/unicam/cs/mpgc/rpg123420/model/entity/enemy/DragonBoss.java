@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg123420.model.entity.enemy;
 
-public class Boss extends Enemy {
-    public Boss() {
+public class DragonBoss extends Enemy {
+    public DragonBoss() {
         super("Drago Boss", 300, 40);
     }
 

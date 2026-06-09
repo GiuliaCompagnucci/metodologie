@@ -13,6 +13,7 @@ public class StartView {
     private GameView gameView;
     private GameController controller;
     private Label descriptionLabel;
+    private Label difficultyDescriptionLabel;
 
     public StartView(Stage primaryStage, GameController controller) {
         this.primaryStage = primaryStage;
@@ -33,12 +34,21 @@ public class StartView {
         classCombo.getItems().addAll("Warrior", "Mage");
         classCombo.setValue("Warrior"); // Default
 
+        // Selezione Difficoltà
+        ComboBox<String> difficultyCombo = new ComboBox<>();
+        difficultyCombo.getItems().addAll("Normale", "Difficile");
+        difficultyCombo.setValue("Normale"); // Default
+
         // Label per la descrizione
         descriptionLabel = new Label();
         descriptionLabel.setWrapText(true); // Permette al testo di andare a capo
         descriptionLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
         updateDescription("Warrior"); // Imposta la descrizione iniziale
 
+        difficultyDescriptionLabel = new Label();
+        difficultyDescriptionLabel.setWrapText(true); // Permette al testo di andare a capo
+        difficultyDescriptionLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
+        updateDifficultyDescription("Normale"); // Imposta la descrizione iniziale
 
         Button startBtn = new Button("Inizia Avventura");
         Button loadBtn = new Button("Carica Partita Salvata");
@@ -47,10 +57,10 @@ public class StartView {
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.CENTER);
 
-        // Ordine degli elementi: Titolo, Nome, Combo, Descrizione, Bottoni
-        root.getChildren().addAll(title, nameField, classCombo, descriptionLabel, startBtn, loadBtn);
+        // Ordine degli elementi: Titolo, Nome, Classe, Descrizione, Difficoltà, Bottoni
+        root.getChildren().addAll(title, nameField, classCombo, descriptionLabel, difficultyCombo, difficultyDescriptionLabel, startBtn, loadBtn);
 
-        Scene scene = new Scene(root, 400, 350);
+        Scene scene = new Scene(root, 400, 400);
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -62,13 +72,22 @@ public class StartView {
             }
         });
 
+        // Listener per la Difficoltà
+        difficultyCombo.setOnAction(e -> {
+            String selected = difficultyCombo.getValue();
+            if (selected != null) {
+                updateDifficultyDescription(selected);
+            }
+        });
+
         startBtn.setOnAction(e -> {
             String name = nameField.getText().isEmpty() ? "Eroe" : nameField.getText();
             String selectedClass = classCombo.getValue();
+            String difficulty = difficultyCombo.getValue();
 
-            System.out.println("Avvio nuovo gioco per: " + name + " come " + selectedClass);
+            System.out.println("Avvio nuovo gioco per: " + name + " come " + selectedClass + " in difficoltà " + difficulty);
 
-            controller.startNewGame(selectedClass, name);
+            controller.startNewGame(selectedClass, name, difficulty);
             gameView.start(primaryStage); // Mostra la vista di gioco
         });
 
@@ -90,6 +109,16 @@ public class StartView {
             descriptionLabel.setText("Mago: Bassa resistenza ma danni magici devastanti. Ideale per chi vuole finire i nemici in pochi colpi.");
         } else {
             descriptionLabel.setText("");
+        }
+    }
+
+    private void updateDifficultyDescription(String difficulty) {
+        if (difficulty.equals("Normale")) {
+            difficultyDescriptionLabel.setText("Normale: Dungeon più corto (3-5 stanze) con meno nemici per stanza.");
+        } else if (difficulty.equals("Difficile")) {
+            difficultyDescriptionLabel.setText("Difficile: Dungeon più lungo (5-7 stanze) con più nemici e sfide impegnative.");
+        } else {
+            difficultyDescriptionLabel.setText("");
         }
     }
 }

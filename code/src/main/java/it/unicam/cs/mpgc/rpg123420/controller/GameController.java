@@ -1,14 +1,8 @@
 package it.unicam.cs.mpgc.rpg123420.controller;
 
-import it.unicam.cs.mpgc.rpg123420.model.entity.character.Mage;
-import it.unicam.cs.mpgc.rpg123420.model.entity.character.Player;
-import it.unicam.cs.mpgc.rpg123420.model.entity.character.Warrior;
-import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Boss;
-import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Enemy;
-import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Goblin;
-import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Orc;
-import it.unicam.cs.mpgc.rpg123420.model.entity.item.HealthPotion;
-import it.unicam.cs.mpgc.rpg123420.model.entity.item.Item;
+import it.unicam.cs.mpgc.rpg123420.model.entity.character.*;
+import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.*;
+import it.unicam.cs.mpgc.rpg123420.model.entity.item.*;
 import it.unicam.cs.mpgc.rpg123420.model.game.Dungeon;
 import it.unicam.cs.mpgc.rpg123420.model.game.Room;
 import it.unicam.cs.mpgc.rpg123420.model.service.CombatService;
@@ -17,6 +11,7 @@ import it.unicam.cs.mpgc.rpg123420.persistence.JsonDataStore;
 import it.unicam.cs.mpgc.rpg123420.persistence.dto.GameStateDTO;
 
 import java.util.List;
+import java.util.Random;
 
 public class GameController {
     private Player player;
@@ -24,14 +19,16 @@ public class GameController {
     private CombatService combatService;
     private DataStore dataStore; // Usiamo l'interfaccia, non l'implementazione concreta (Dependency Inversion)
     private boolean gameStarted = false;
+    private Random random;
 
     public GameController() {
         this.combatService = new CombatService();
         this.dataStore = new JsonDataStore();
+        this.random = new Random();
     }
 
     // Metodo chiamato dalla UI quando l'utente sceglie la classe
-    public void startNewGame(String className, String playerName) {
+    public void startNewGame(String className, String playerName, String difficulty) {
         if (className.equals("Warrior")) {
             this.player = new Warrior(playerName);
         } else if (className.equals("Mage")) {
@@ -41,43 +38,63 @@ public class GameController {
             this.player = new Warrior(playerName);
         }
 
-        initDungeon();
+        initDungeon(difficulty);
         this.gameStarted = true;
     }
 
-    public void useItem(int itemIndex) {
-        if (!gameStarted || player == null) return;
-
-        List<Item> items = player.getInventory();
-        if (itemIndex >= 0 && itemIndex < items.size()) {
-            Item item = items.get(itemIndex);
-            item.use(player); // Polimorfismo: chiama use() specifico dell'oggetto
-            player.removeItem(item); // Rimuovi l'oggetto dopo l'uso (se consumabile)
-            // Logica di log potrebbe essere gestita dalla View o ritornata qui
-        }
-    }
-
-    public List<Item> getPlayerItems() {
-        if (player == null) return List.of();
-        return player.getInventory();
-    }
-
-    private void initDungeon() {
+    private void initDungeon(String difficulty) {
         this.dungeon = new Dungeon();
 
-        // Diamo al giocatore una pozione iniziale per aiutare contro il boss
-        this.player.addItem(new HealthPotion(50));
+        // Logica per il numero di stanze in base alla difficoltà
+        int numRooms;
+        if ("Difficile".equals(difficulty)) {
+            numRooms = 5 + random.nextInt(3); // Tra 5 e 7 stanze
+        } else {
+            numRooms = 3 + random.nextInt(3); // Tra 3 e 5 stanze (Normale)
+        }
 
-        // Stanza 1: Goblin e Orco
-        Room r1 = new Room(1, false);
-        r1.addEnemy(new Goblin());
-        r1.addEnemy(new Orc());
-        dungeon.addRoom(r1);
+        for (int i = 1; i <= numRooms; i++) {
+            Room room = new Room(i, false);
 
-        // Stanza 2: Boss
-        Room r2 = new Room(2, true);
-        r2.addEnemy(new Boss());
-        dungeon.addRoom(r2);
+            // In modalità difficile, più nemici per stanza
+            int maxEnemies = "Difficile".equals(difficulty) ? 3 : 2;
+            int numEnemies = 1 + random.nextInt(maxEnemies);
+
+            for (int j = 0; j < numEnemies; j++) {
+                room.addEnemy(generateRandomEnemy());
+            }
+
+            // Chance di loot
+            if (random.nextDouble() < 0.3) {
+                player.addItem(generateRandomItem());
+            }
+
+            dungeon.addRoom(room);
+        }
+
+        // Boss Room
+        Room bossRoom = new Room(numRooms + 1, true);
+        bossRoom.addEnemy(generateRandomBoss());
+        dungeon.addRoom(bossRoom);
+    }
+
+    private Enemy generateRandomEnemy() {
+        int type = random.nextInt(3);
+        if (type == 0) return new Goblin();
+        else if (type == 1) return new Orc();
+        else return new Skeleton();
+    }
+
+    private Enemy generateRandomBoss() {
+        int type = random.nextInt(2);
+        if (type == 0) return new DragonBoss();
+        else return new LichBoss();
+    }
+
+    private Item generateRandomItem() {
+        int type = random.nextInt(2);
+        if (type == 0) return new HealthPotion(50);
+        else return new StrengthPotion(10);
     }
 
     public boolean isGameStarted() {
@@ -91,6 +108,22 @@ public class GameController {
 
     public Dungeon getDungeon() {
         return dungeon;
+    }
+
+    public void useItem(int itemIndex) {
+        if (!gameStarted || player == null) return;
+
+        List<Item> items = player.getInventory();
+        if (itemIndex >= 0 && itemIndex < items.size()) {
+            Item item = items.get(itemIndex);
+            item.use(player); // Polimorfismo: chiama use() specifico dell'oggetto
+            player.removeItem(item); // Rimuovi l'oggetto dopo l'uso (se consumabile)
+        }
+    }
+
+    public List<Item> getPlayerItems() {
+        if (player == null) return List.of();
+        return player.getInventory();
     }
 
     public List<Enemy> getCurrentEnemies() {
