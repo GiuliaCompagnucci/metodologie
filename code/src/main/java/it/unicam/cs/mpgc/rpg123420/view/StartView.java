@@ -1,18 +1,23 @@
 package it.unicam.cs.mpgc.rpg123420.view;
 
 import it.unicam.cs.mpgc.rpg123420.controller.GameController;
+
+import javafx.application.Platform;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+
 import javafx.stage.Stage;
 
 public class StartView {
     private Stage primaryStage;
     private GameView gameView;
     private GameController controller;
-    private Label descriptionLabel;
+    private Label classDescriptionLabel;
     private Label difficultyDescriptionLabel;
 
     public StartView(Stage primaryStage, GameController controller) {
@@ -40,9 +45,9 @@ public class StartView {
         difficultyCombo.setValue("Normale"); // Default
 
         // Label per la descrizione
-        descriptionLabel = new Label();
-        descriptionLabel.setWrapText(true); // Permette al testo di andare a capo
-        descriptionLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
+        classDescriptionLabel = new Label();
+        classDescriptionLabel.setWrapText(true); // Permette al testo di andare a capo
+        classDescriptionLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
         updateDescription("Warrior"); // Imposta la descrizione iniziale
 
         difficultyDescriptionLabel = new Label();
@@ -52,15 +57,28 @@ public class StartView {
 
         Button startBtn = new Button("Inizia Avventura");
         Button loadBtn = new Button("Carica Partita Salvata");
+        Button exitBtn = new Button("Esci dal Gioco");
+        exitBtn.setStyle("-fx-base: #d9534f; -fx-text-fill: white;");
 
         VBox root = new VBox(15);
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.CENTER);
 
-        // Ordine degli elementi: Titolo, Nome, Classe, Descrizione, Difficoltà, Bottoni
-        root.getChildren().addAll(title, nameField, classCombo, descriptionLabel, difficultyCombo, difficultyDescriptionLabel, startBtn, loadBtn);
+        VBox buttonBox = new VBox(10, startBtn, loadBtn, exitBtn);
+        buttonBox.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(root, 400, 400);
+        // Ordine degli elementi: Titolo, Nome, Classe, Descrizione, Difficoltà, Bottoni
+        root.getChildren().addAll(
+                title,
+                nameField,
+                classCombo,
+                classDescriptionLabel,
+                difficultyCombo,
+                difficultyDescriptionLabel,
+                buttonBox
+        );
+
+        Scene scene = new Scene(root, 400, 450);
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -100,15 +118,20 @@ public class StartView {
                 alert.showAndWait();
             }
         });
+
+        // Listener per il bottone Esci
+        exitBtn.setOnAction(e -> {
+            Platform.exit();
+        });
     }
 
     private void updateDescription(String className) {
         if (className.equals("Warrior")) {
-            descriptionLabel.setText("Guerriero: Alta resistenza fisica e danni costanti. Ideale per chi preferisce la sopravvivenza.");
+            classDescriptionLabel.setText("Guerriero: Alta resistenza fisica e danni costanti. Ideale per chi preferisce la sopravvivenza.");
         } else if (className.equals("Mage")) {
-            descriptionLabel.setText("Mago: Bassa resistenza ma danni magici devastanti. Ideale per chi vuole finire i nemici in pochi colpi.");
+            classDescriptionLabel.setText("Mago: Bassa resistenza ma danni magici devastanti. Ideale per chi vuole finire i nemici in pochi colpi.");
         } else {
-            descriptionLabel.setText("");
+            classDescriptionLabel.setText("");
         }
     }
 

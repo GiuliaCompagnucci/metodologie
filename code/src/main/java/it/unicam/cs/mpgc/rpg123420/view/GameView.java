@@ -4,6 +4,8 @@ import it.unicam.cs.mpgc.rpg123420.controller.GameController;
 import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Enemy;
 import it.unicam.cs.mpgc.rpg123420.model.entity.item.Item;
 
+import javafx.application.Platform;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 
@@ -21,7 +23,7 @@ public class GameView {
 
     // Componenti UI
     private TextArea logArea;
-    private VBox enemyContainer;
+    private HBox enemyContainer;
     private VBox inventoryContainer;
     private Label statusLabel;
     private HBox actionContainer; // Contiene i bottoni di attacco
@@ -38,41 +40,47 @@ public class GameView {
 
         primaryStage.setTitle("RPG Dungeon Crawler - Matricola 123420");
 
-        // 1. Label di Stato (Nome, Classe, HP, Stanza)
+        // Label di Stato (Nome, Classe, HP, Stanza)
         statusLabel = new Label();
         statusLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 10px;");
 
-        // 2. Area di Log
+        // Area di Log
         logArea = new TextArea();
         logArea.setEditable(false);
         logArea.setPrefHeight(150);
         logArea.setWrapText(true);
 
-        // 3. Contenitore Nemici
-        enemyContainer = new VBox(10);
+        // Contenitore Nemici
+        enemyContainer = new HBox(10);
         enemyContainer.setAlignment(Pos.CENTER);
         enemyContainer.setStyle("-fx-border-color: #ccc; -fx-border-width: 1; -fx-padding: 10px;");
 
-        // 4. Contenitore Azioni (Bottoni Attacco)
+        // Contenitore Azioni (Bottoni Attacco)
         actionContainer = new HBox(10);
         actionContainer.setAlignment(Pos.CENTER);
 
-        // 5. Contenitore Inventario
+        // Contenitore Inventario
         inventoryContainer = new VBox(5);
         inventoryContainer.setAlignment(Pos.CENTER);
         inventoryContainer.setStyle("-fx-border-color: #aaa; -fx-border-width: 1; -fx-padding: 10px; -fx-background-color: #f9f9f9;");
 
-        // 6. Bottoni Globali
+        // Bottoni Globali
         nextRoomBtn = new Button("Prossima Stanza");
-        nextRoomBtn.setStyle("-fx-base: #4caf50; -fx-text-fill: white;"); // Verde
+        nextRoomBtn.setStyle("-fx-base: #4caf50; -fx-text-fill: white;");
 
         Button saveBtn = new Button("Salva Partita");
         Button loadBtn = new Button("Carica Partita");
+        Button exitBtn = new Button("Esci dal Gioco");
+        exitBtn.setStyle("-fx-base: #d9534f; -fx-text-fill: white;");
+
 
         // Layout Principale
         VBox root = new VBox(20);
         root.setPadding(new Insets(20));
         root.setAlignment(Pos.TOP_CENTER);
+
+        HBox bottomButtons = new HBox(10, saveBtn, loadBtn, exitBtn);
+        bottomButtons.setAlignment(Pos.CENTER);
 
         // Aggiunta elementi in ordine verticale
         root.getChildren().addAll(
@@ -83,7 +91,7 @@ public class GameView {
                 inventoryContainer,
                 logArea,
                 nextRoomBtn,
-                new HBox(10, saveBtn, loadBtn)
+                bottomButtons
         );
 
         Scene scene = new Scene(root, 700, 600);
@@ -111,6 +119,21 @@ public class GameView {
             logArea.appendText(">> Partita Caricata.\n");
             updateUI();
         });
+
+        exitBtn.setOnAction(e -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Conferma Uscita");
+            alert.setHeaderText("Stai per uscire dal gioco");
+            alert.setContentText("Sei sicuro di voler uscire? Assicurati di aver salvato la partita, altrimenti i progressi andranno persi!");
+
+            // Mostra l'alert e attendi la risposta
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    Platform.exit();
+                }
+                // Se l'utente clicca "Cancel" o chiude la finestra, non succede nulla e rimane nel gioco
+            });
+        });
     }
 
     /**
@@ -123,7 +146,7 @@ public class GameView {
             return;
         }
 
-        // 1. Gestione Fine Gioco / Vittoria
+        // Gestione Fine Gioco / Vittoria
         if (controller.isGameOver()) {
             statusLabel.setText("GAME OVER - Sei stato sconfitto!");
             statusLabel.setStyle("-fx-text-fill: red; -fx-font-weight: bold; -fx-font-size: 16px;");
@@ -137,7 +160,7 @@ public class GameView {
             return;
         }
 
-        // 2. Aggiornamento Status Bar
+        // Aggiornamento Status Bar
         String heroClass = controller.getPlayer().getClass().getSimpleName();
         String heroName = controller.getPlayer().getName();
         int currentHp = controller.getPlayer().getCurrentHealth();
@@ -148,7 +171,7 @@ public class GameView {
                 heroName, heroClass, roomIndex, currentHp, maxHp));
         statusLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
-        // 3. Aggiornamento Nemici e Bottoni Attacco
+        // Aggiornamento Nemici e Bottoni Attacco
         enemyContainer.getChildren().clear();
         actionContainer.getChildren().clear();
 
@@ -186,7 +209,7 @@ public class GameView {
             }
         }
 
-        // 4. Gestione Visibilità Bottone "Prossima Stanza"
+        // Gestione Visibilità Bottone "Prossima Stanza"
         if (allEnemiesDefeated && !enemies.isEmpty()) {
             nextRoomBtn.setVisible(true);
             nextRoomBtn.setDisable(false);
@@ -197,7 +220,7 @@ public class GameView {
             nextRoomBtn.setVisible(false); // Nascondi se ci sono nemici vivi
         }
 
-        // 5. Aggiornamento Inventario
+        // Aggiornamento Inventario
         inventoryContainer.getChildren().clear();
         List<Item> items = controller.getPlayerItems();
 
