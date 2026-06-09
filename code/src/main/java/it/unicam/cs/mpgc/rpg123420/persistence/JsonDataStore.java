@@ -13,14 +13,13 @@ import java.nio.file.Paths;
 
 public class JsonDataStore implements DataStore {
 
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final Gson gson = GsonProvider.getGson();
 
     @Override
     public void saveGame(GameStateDTO gameState, String filename) {
         try (FileWriter writer = new FileWriter(filename)) {
             gson.toJson(gameState, writer);
         } catch (IOException e) {
-            System.err.println("Errore durante il salvataggio: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -31,7 +30,6 @@ public class JsonDataStore implements DataStore {
             String json = Files.readString(Paths.get(filename));
             return gson.fromJson(json, GameStateDTO.class);
         } catch (IOException e) {
-            System.err.println("Errore durante il caricamento: " + e.getMessage());
             return null;
         }
     }

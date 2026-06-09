@@ -77,7 +77,6 @@ public class GameView {
         // Aggiunta elementi in ordine verticale
         root.getChildren().addAll(
                 statusLabel,
-                new Label("--- Nemici ---"),
                 enemyContainer,
                 actionContainer,
                 new Label("--- Inventario ---"),

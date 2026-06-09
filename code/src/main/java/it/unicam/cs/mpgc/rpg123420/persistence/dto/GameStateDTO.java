@@ -8,20 +8,18 @@ import it.unicam.cs.mpgc.rpg123420.model.game.Dungeon;
  * Contiene tutte le informazioni necessarie per salvare e ricaricare una partita.
  */
 public class GameStateDTO {
-
     private Player player;
     private Dungeon dungeon;
+    private String saveDate;
 
-    // Costruttore vuoto necessario per Gson
-    public GameStateDTO() {
-    }
+    public GameStateDTO() {}
 
     public GameStateDTO(Player player, Dungeon dungeon) {
         this.player = player;
         this.dungeon = dungeon;
+        this.saveDate = java.time.LocalDateTime.now().toString();
     }
 
-    // Getter e Setter
     public Player getPlayer() {
         return player;
     }
@@ -38,4 +36,7 @@ public class GameStateDTO {
         this.dungeon = dungeon;
     }
 
+    public String getSaveDate() {
+        return saveDate;
+    }
 }

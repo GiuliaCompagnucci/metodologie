@@ -43,8 +43,16 @@ public abstract class Enemy implements Combatant {
     public int getDamage() {
         return damage;
     }
+
     // Metodo opzionale per comportamenti speciali (es. abilità del boss)
     public String specialAbility() {
         return "";
+    }
+
+    public void setStats(String name, int currentHealth, int maxHealth, int damage) {
+        this.name = name;
+        this.currentHealth = currentHealth;
+        this.maxHealth = maxHealth;
+        this.damage = damage;
     }
 }

@@ -54,6 +54,10 @@ public abstract class Player implements Combatant {
         return inventory;
     }
 
+    public void setInventory(List<Item> inventory) {
+        this.inventory = inventory;
+    }
+
     public void removeItem(Item item) {
         this.inventory.remove(item);
     }
@@ -73,4 +77,10 @@ public abstract class Player implements Combatant {
 
     // Metodo astratto per l'attacco specifico della classe
     public abstract int attack(Combatant target);
+
+    public void setStats(int currentHealth, int maxHealth, int bonusDamage) {
+        this.currentHealth = currentHealth;
+        this.maxHealth = maxHealth;
+        this.bonusDamage = bonusDamage;
+    }
 }
