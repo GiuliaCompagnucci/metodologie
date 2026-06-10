@@ -20,6 +20,7 @@ import java.util.List;
 
 public class GameView {
     private GameController controller;
+    private Stage primaryStage;
 
     // Componenti UI
     private TextArea logArea;
@@ -29,8 +30,9 @@ public class GameView {
     private HBox actionContainer; // Contiene i bottoni di attacco
     private Button nextRoomBtn;   // Bottone per avanzare
 
-    public GameView(GameController controller) {
+    public GameView(GameController controller, Stage primaryStage) {
         this.controller = controller;
+        this.primaryStage = primaryStage;
     }
 
     public void start(Stage primaryStage) {
@@ -120,19 +122,62 @@ public class GameView {
             updateUI();
         });
 
+        // LOGICA DI USCITA INTELLIGENTE
         exitBtn.setOnAction(e -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Conferma Uscita");
-            alert.setHeaderText("Stai per uscire dal gioco");
-            alert.setContentText("Sei sicuro di voler uscire? Assicurati di aver salvato la partita, altrimenti i progressi andranno persi!");
+            if (controller.isVictory()) {
+                showVictoryExitDialog();
+            } else if (controller.isGameOver()) {
+                showDefeatExitDialog();
+            } else {
+                showNormalExitDialog();
+            }
+        });
+    }
 
-            // Mostra l'alert e attendi la risposta
-            alert.showAndWait().ifPresent(response -> {
-                if (response == ButtonType.OK) {
-                    Platform.exit();
-                }
-                // Se l'utente clicca "Cancel" o chiude la finestra, non succede nulla e rimane nel gioco
-            });
+    private void showVictoryExitDialog() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Vittoria!");
+        alert.setHeaderText("Complimenti! Hai completato il Dungeon.");
+        alert.setContentText("Vuoi iniziare una nuova avventura?");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                // Torna alla StartView
+                StartView startView = new StartView(this.primaryStage, this.controller);
+                startView.show();
+            } else {
+                Platform.exit();
+            }
+        });
+    }
+
+    private void showDefeatExitDialog() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Sconfitta...");
+        alert.setHeaderText("Il tuo eroe è caduto in battaglia.");
+        alert.setContentText("Vuoi provare di nuovo con una nuova avventura?");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                // Torna alla StartView
+                StartView startView = new StartView(this.primaryStage, this.controller);
+                startView.show();
+            } else {
+                Platform.exit();
+            }
+        });
+    }
+
+    private void showNormalExitDialog() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Conferma Uscita");
+        alert.setHeaderText("Stai per uscire dal gioco");
+        alert.setContentText("Sei sicuro? Ricorda di salvare la partita se vuoi riprendere in seguito!");
+
+        alert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                Platform.exit();
+            }
         });
     }
 
@@ -167,8 +212,13 @@ public class GameView {
         int maxHp = controller.getPlayer().getMaxHealth();
         int roomIndex = controller.getDungeon().getCurrentRoomIndex() + 1;
 
-        statusLabel.setText(String.format("%s (%s) | Stanza: %d | HP: %d/%d",
-                heroName, heroClass, roomIndex, currentHp, maxHp));
+        // Calcolo Danno Totale
+        int baseDamage = controller.getPlayer().getBaseDamage();
+        int bonusDamage = controller.getPlayer().getBonusDamage();
+        int totalDamage = baseDamage + bonusDamage;
+
+        statusLabel.setText(String.format("%s (%s) | Stanza: %d | HP: %d/%d | Danno: %d",
+                            heroName, heroClass, roomIndex, currentHp, maxHp, totalDamage));
         statusLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 
         // Aggiornamento Nemici e Bottoni Attacco

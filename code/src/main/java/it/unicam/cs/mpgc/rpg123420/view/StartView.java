@@ -23,7 +23,7 @@ public class StartView {
     public StartView(Stage primaryStage, GameController controller) {
         this.primaryStage = primaryStage;
         this.controller = controller;
-        this.gameView = new GameView(controller); // Passa il controller anche a GameView
+        this.gameView = new GameView(controller, primaryStage); // Passa il controller e lo stage anche a GameView
     }
 
     public void show() {

@@ -78,6 +78,8 @@ public abstract class Player implements Combatant {
     // Metodo astratto per l'attacco specifico della classe
     public abstract int attack(Combatant target);
 
+    public abstract int getBaseDamage();
+
     public void setStats(int currentHealth, int maxHealth, int bonusDamage) {
         this.currentHealth = currentHealth;
         this.maxHealth = maxHealth;

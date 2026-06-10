@@ -8,6 +8,11 @@ public class Mage extends Player {
     }
 
     @Override
+    public int getBaseDamage() {
+        return 40;
+    }
+
+    @Override
     public int attack(Combatant target) {
         System.out.println(getName() + " lancia una palla di fuoco!");
         return 40 + getBonusDamage(); // Danno magico alto
