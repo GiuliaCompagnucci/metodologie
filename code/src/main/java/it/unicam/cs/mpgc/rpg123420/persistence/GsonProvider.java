@@ -9,6 +9,12 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Provider centralizzato per l'istanza di Gson configurata con adapter custom.
+ * Gestisce la serializzazione e deserializzazione di classi astratte o interfacce
+ * (Player, Enemy, Item) utilizzando un campo discriminatore "type" per identificare
+ * la classe concreta da istanziare durante il caricamento dei dati salvati.
+ */
 public class GsonProvider {
 
     private static final Gson gson = new GsonBuilder()
@@ -18,11 +24,20 @@ public class GsonProvider {
             .registerTypeAdapter(Item.class, new ItemAdapter())
             .create();
 
+    /**
+     * Restituisce l'istanza singleton di Gson pronta per l'uso con gli adapter registrati.
+     * @return L'oggetto Gson configurato.
+     */
     public static Gson getGson() {
         return gson;
     }
 
     // --- ADAPTER PER PLAYER ---
+
+    /**
+     * Adapter custom per la serializzazione/deserializzazione della classe astratta Player.
+     * Salva il tipo concreto (Warrior/Mage) e ripristina lo stato completo inclusi inventario e bonus.
+     */
     private static class PlayerAdapter implements JsonSerializer<Player>, JsonDeserializer<Player> {
         @Override
         public JsonElement serialize(Player src, Type typeOfSrc, JsonSerializationContext context) {
@@ -32,7 +47,7 @@ public class GsonProvider {
             json.addProperty("currentHealth", src.getCurrentHealth());
             json.addProperty("maxHealth", src.getMaxHealth());
             json.addProperty("bonusDamage", src.getBonusDamage());
-            // Serializza l'inventario ricorsivamente
+            // Serializza l'inventario ricorsivamente usando il contesto di Gson
             json.add("inventory", context.serialize(src.getInventory()));
             return json;
         }
@@ -53,7 +68,7 @@ public class GsonProvider {
                     obj.get("bonusDamage").getAsInt()
             );
 
-            // Deserializza l'inventario
+            // Deserializza l'inventario elemento per elemento
             List<Item> inventory = new ArrayList<>();
             if (obj.has("inventory")) {
                 for (JsonElement itemElem : obj.getAsJsonArray("inventory")) {
@@ -67,6 +82,11 @@ public class GsonProvider {
     }
 
     // --- ADAPTER PER ENEMY ---
+
+    /**
+     * Adapter custom per la serializzazione/deserializzazione della classe astratta Enemy.
+     * Utilizza uno switch sul campo "type" per istanziare la sottoclasse corretta (Goblin, Orc, Boss, ecc.).
+     */
     private static class EnemyAdapter implements JsonSerializer<Enemy>, JsonDeserializer<Enemy> {
         @Override
         public JsonElement serialize(Enemy src, Type typeOfSrc, JsonSerializationContext context) {
@@ -105,6 +125,11 @@ public class GsonProvider {
     }
 
     // --- ADAPTER PER ITEM ---
+
+    /**
+     * Adapter custom per la serializzazione/deserializzazione dell'interfaccia Item.
+     * Gestisce in modo sicuro la mancanza del campo "type" fornendo un valore di default.
+     */
     private static class ItemAdapter implements JsonSerializer<Item>, JsonDeserializer<Item> {
         @Override
         public JsonElement serialize(Item src, Type typeOfSrc, JsonSerializationContext context) {
@@ -117,6 +142,7 @@ public class GsonProvider {
         public Item deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject obj = json.getAsJsonObject();
 
+            // Controllo di robustezza per evitare NullPointerException su file vecchi o corrotti
             if (!obj.has("type") || obj.get("type") == null || obj.get("type").isJsonNull()) {
                 System.err.println("Item senza tipo rilevato, restituisco pozione base.");
                 return new HealthPotion(50);

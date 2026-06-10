@@ -4,13 +4,20 @@ import it.unicam.cs.mpgc.rpg123420.model.entity.enemy.Enemy;
 import it.unicam.cs.mpgc.rpg123420.model.entity.character.Player;
 import it.unicam.cs.mpgc.rpg123420.model.game.Room;
 
+/**
+ * Servizio responsabile della gestione della logica di combattimento tra il giocatore e i nemici.
+ * Incapsula le regole di calcolo del danno, l'applicazione degli effetti e la generazione dei log di battaglia,
+ * mantenendo separata la logica di business dalle entità di gioco e dall'interfaccia utente.
+ */
 public class CombatService {
 
     /**
      * Gestisce l'attacco del giocatore verso un nemico specifico.
-     * @param player Il giocatore che attacca
-     * @param target Il nemico bersaglio
-     * @return Una stringa di log descrivente l'azione
+     * Calcola il danno tramite il metodo polimorfico del player, lo applica al bersaglio
+     * e genera un report testuale dell'azione.
+     * @param player Il giocatore che esegue l'attacco.
+     * @param target Il nemico bersaglio dell'attacco.
+     * @return Una stringa di log descrivente l'esito dell'attacco (danno inflitto ed eventuale sconfitta del nemico).
      */
     public String playerAttack(Player player, Enemy target) {
         // Controllo se il combattimento è già finito
@@ -18,16 +25,16 @@ public class CombatService {
             return "Combattimento finito.";
         }
 
-        // 1. Calcola il danno usando il polimorfismo (chiama attack() di Warrior o Mage)
+        // Calcola il danno usando il polimorfismo (chiama attack() di Warrior o Mage)
         int damage = player.attack(target);
 
-        // 2. APPLICA il danno al nemico (Questo era il passaggio mancante o errato!)
+        // APPLICA il danno al nemico (Questo era il passaggio mancante o errato!)
         target.takeDamage(damage);
 
-        // 3. Genera il log
+        // Genera il log
         String log = player.getName() + " infligge " + damage + " danni a " + target.getName() + "!";
 
-        // 4. Controlla se il nemico è morto
+        // Controlla se il nemico è morto
         if (!target.isAlive()) {
             log += " " + target.getName() + " è stato sconfitto!";
         }
@@ -36,10 +43,11 @@ public class CombatService {
     }
 
     /**
-     * Gestisce il turno di tutti i nemici vivi nella stanza.
-     * @param room La stanza corrente
-     * @param player Il giocatore
-     * @return Una stringa di log descrivente le azioni dei nemici
+     * Gestisce il turno di controattacco di tutti i nemici vivi presenti nella stanza.
+     * Itera sulla lista dei nemici e applica il loro danno base al giocatore.
+     * @param room La stanza corrente contenente i nemici attivi.
+     * @param player Il giocatore che subisce gli attacchi.
+     * @return Una stringa di log cumulativa descrivente i danni subiti dal giocatore.
      */
     public String enemiesTurn(Room room, Player player) {
         if (!player.isAlive()) {

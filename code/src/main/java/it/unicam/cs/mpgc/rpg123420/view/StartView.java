@@ -1,31 +1,46 @@
 package it.unicam.cs.mpgc.rpg123420.view;
 
 import it.unicam.cs.mpgc.rpg123420.controller.GameController;
-
 import javafx.application.Platform;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-
 import javafx.stage.Stage;
 
+/**
+ * Classe responsabile della schermata iniziale di configurazione del gioco.
+ * Permette all'utente di selezionare la classe dell'eroe, la difficoltà del dungeon
+ * e di avviare una nuova partita o caricarne una esistente.
+ * Funge da punto di ingresso principale per l'interazione utente prima dell'inizio del gameplay.
+ */
 public class StartView {
     private Stage primaryStage;
     private GameView gameView;
     private GameController controller;
+
+    // Label dinamiche per fornire feedback descrittivo all'utente
     private Label classDescriptionLabel;
     private Label difficultyDescriptionLabel;
 
+    /**
+     * Costruttore della View iniziale.
+     * Inizializza il riferimento allo stage principale, al controller e prepara la GameView.
+     * @param primaryStage Lo stage principale dell'applicazione JavaFX.
+     * @param controller Il controller che gestisce la logica di business e lo stato del gioco.
+     */
     public StartView(Stage primaryStage, GameController controller) {
         this.primaryStage = primaryStage;
         this.controller = controller;
-        this.gameView = new GameView(controller, primaryStage); // Passa il controller e lo stage anche a GameView
+        // Inizializza la vista di gioco passando controller e stage per permettere la navigazione successiva
+        this.gameView = new GameView(controller, primaryStage);
     }
 
+    /**
+     * Configura e mostra la scena di selezione iniziale.
+     * Definisce il layout UI, i componenti di input e registra gli handler per gli eventi utente.
+     */
     public void show() {
         primaryStage.setTitle("Selezione Classe - RPG Project");
 
@@ -35,23 +50,25 @@ public class StartView {
         TextField nameField = new TextField();
         nameField.setPromptText("Nome Eroe");
 
+        // Selezione Classe Eroe
         ComboBox<String> classCombo = new ComboBox<>();
         classCombo.getItems().addAll("Warrior", "Mage");
         classCombo.setValue("Warrior"); // Default
 
-        // Selezione Difficoltà
+        // Selezione Difficoltà Dungeon
         ComboBox<String> difficultyCombo = new ComboBox<>();
         difficultyCombo.getItems().addAll("Normale", "Difficile");
         difficultyCombo.setValue("Normale"); // Default
 
-        // Label per la descrizione
+        // Label per la descrizione dinamica della classe
         classDescriptionLabel = new Label();
-        classDescriptionLabel.setWrapText(true); // Permette al testo di andare a capo
+        classDescriptionLabel.setWrapText(true);
         classDescriptionLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
         updateDescription("Warrior"); // Imposta la descrizione iniziale
 
+        // Label per la descrizione dinamica della difficoltà
         difficultyDescriptionLabel = new Label();
-        difficultyDescriptionLabel.setWrapText(true); // Permette al testo di andare a capo
+        difficultyDescriptionLabel.setWrapText(true);
         difficultyDescriptionLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555;");
         updateDifficultyDescription("Normale"); // Imposta la descrizione iniziale
 
@@ -67,7 +84,7 @@ public class StartView {
         VBox buttonBox = new VBox(10, startBtn, loadBtn, exitBtn);
         buttonBox.setAlignment(Pos.CENTER);
 
-        // Ordine degli elementi: Titolo, Nome, Classe, Descrizione, Difficoltà, Bottoni
+        // Assemblaggio della scena
         root.getChildren().addAll(
                 title,
                 nameField,
@@ -82,7 +99,7 @@ public class StartView {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        // Listener per aggiornare la descrizione quando cambia la selezione
+        // Listener: Aggiorna la descrizione testuale quando cambia la classe selezionata
         classCombo.setOnAction(e -> {
             String selected = classCombo.getValue();
             if (selected != null) {
@@ -90,7 +107,7 @@ public class StartView {
             }
         });
 
-        // Listener per la Difficoltà
+        // Listener: Aggiorna la descrizione testuale quando cambia la difficoltà
         difficultyCombo.setOnAction(e -> {
             String selected = difficultyCombo.getValue();
             if (selected != null) {
@@ -98,6 +115,7 @@ public class StartView {
             }
         });
 
+        // Handler: Avvia una nuova partita configurando il controller con i parametri scelti
         startBtn.setOnAction(e -> {
             String name = nameField.getText().isEmpty() ? "Eroe" : nameField.getText();
             String selectedClass = classCombo.getValue();
@@ -106,9 +124,10 @@ public class StartView {
             System.out.println("Avvio nuovo gioco per: " + name + " come " + selectedClass + " in difficoltà " + difficulty);
 
             controller.startNewGame(selectedClass, name, difficulty);
-            gameView.start(primaryStage); // Mostra la vista di gioco
+            gameView.start(primaryStage); // Passa alla vista di gioco
         });
 
+        // Handler: Tenta di caricare una partita salvata precedentemente
         loadBtn.setOnAction(e -> {
             controller.loadGame();
             if (controller.isGameStarted()) {
@@ -119,12 +138,16 @@ public class StartView {
             }
         });
 
-        // Listener per il bottone Esci
+        // Handler: Chiude l'applicazione
         exitBtn.setOnAction(e -> {
             Platform.exit();
         });
     }
 
+    /**
+     * Aggiorna il testo descrittivo in base alla classe dell'eroe selezionata.
+     * @param className Il nome della classe (es. "Warrior", "Mage").
+     */
     private void updateDescription(String className) {
         if (className.equals("Warrior")) {
             classDescriptionLabel.setText("Guerriero: Alta resistenza fisica e danni costanti. Ideale per chi preferisce la sopravvivenza.");
@@ -135,6 +158,10 @@ public class StartView {
         }
     }
 
+    /**
+     * Aggiorna il testo descrittivo in base al livello di difficoltà selezionato.
+     * @param difficulty Il livello di difficoltà (es. "Normale", "Difficile").
+     */
     private void updateDifficultyDescription(String difficulty) {
         if (difficulty.equals("Normale")) {
             difficultyDescriptionLabel.setText("Normale: Dungeon più corto (3-5 stanze) con meno nemici per stanza.");
